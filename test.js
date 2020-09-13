@@ -36,5 +36,3 @@ async function getNextQuiz(url, moodleSession, idmSession) {
         console.log(parsedDate);
     });
 }
-
-getNextQuiz('https://culearn.carleton.ca/moodle/mod/quiz/index.php?id=155093', getCookie('MoodleSession'), getCookie('IDMSESSID'));
