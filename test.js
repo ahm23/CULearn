@@ -32,7 +32,8 @@ async function getNextQuiz(url, moodleSession, idmSession) {
             'Cookie': 'MoodleSession=' + moodleSession + '; IDMSESSID=' + idmSession + ';'
         }
     }).then(pageData => {
-        parsedDate = pageData.match(/c2" style="text-align:left;">(.*?);/);
+        console.log(pageData);
+        parsedDate = pageData.body.match(/c2" style="text-align:left;">(.*?);/);
         console.log(parsedDate);
     });
 }
