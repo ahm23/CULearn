@@ -1,4 +1,4 @@
-<!-- Copyright 2020, Ahmed A. Moussa, GNU GPLv3 License -->
+<!-- Created by Ahmed A. Moussa, GNU GPLv3 License -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <div style="text-align: center;" id="list-source-loading">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="52" height="52" fill="#088482">
@@ -38,12 +38,8 @@
     }
 
     async function getNearestDate(code, moodleSession, idmSession) {
-        console.log('triggered req')
-        let nearestQuiz;
-        let nearestAssignement;
-        await requestHandlerNearest(code, moodleSession, idmSession, 'quiz').then(date => nearestQuiz = date);
-        await requestHandlerNearest(code, moodleSession, idmSession, 'assign').then(date => nearestAssignement = date);
-        console.log('completed req')
+        let [nearestQuiz, nearestAssignement] = await Promise.all([requestHandlerNearest(code, moodleSession, idmSession, 'quiz'), requestHandlerNearest(code, moodleSession, idmSession, 'assign')])
+        console.log(nearestAssignement, nearestQuiz)
         if (nearestQuiz === 'No Due Dates Approaching')
             return nearestAssignement;
         else if (nearestAssignement === 'No Due Dates Approaching')
@@ -55,9 +51,8 @@
             return nearestQuiz;
     }
 
-    async function requestHandlerNearest(code, moodleSession, idmSession, mod) {
-        let externalListener;
-        await fetch('https://culearn.carleton.ca/moodle/mod/' + mod + '/index.php?id=' + code, {
+    const requestHandlerNearest = (code, moodleSession, idmSession, mod) => new Promise((resolve) => {
+        fetch('https://culearn.carleton.ca/moodle/mod/' + mod + '/index.php?id=' + code, {
             method: 'POST',
             headers: {
                 'Connection': 'keep-alive',
@@ -78,12 +73,12 @@
         }).then(pageData => {
             const PARSED_DATE = window['parseNearestIncomplete_' + mod](pageData);
             if (PARSED_DATE)
-                externalListener = PARSED_DATE[1];
+                resolve(PARSED_DATE[1]);
             else
-                externalListener = 'No Due Dates Approaching';
+                resolve('No Due Dates Approaching');
         });
-        return externalListener;
-    }
+    })
+
 
     function parseNearestIncomplete_quiz(data) {
         return data.match(/c2" style="text-align:left;">(.*?)<\/td>\n<td class="cell c3 lastcol" style="text-align:left;"><\/td>/);
@@ -98,20 +93,23 @@
             ($(a).text().toUpperCase()) ? 1 : -1;
     }
 
-    $(document).ready(function() {
+    $(function() {
         let courseCount = 0;
         for (div of $('.courses').first().children().toArray()) {
             console.log('looping')
-            let code = $(div).children().first().attr('href').match(/id=(.*)/)[1];
-            let name = $(div).children().first().text().substring(0, 8) === 'Crosslis' ? $(div).children().first().text().substring(10, 18) : $(div).children().first().text().substring(0, 8);
+            let code = $(div).children('a').attr('href').match(/id=(.*)/)[1];
+            let name = $(div).text().match(/[A-Z]{4}\d{4}/) ? $(div).text().match(/[A-Z]{4}\d{4}/)[0] : undefined;
             getNearestDate(code, getCookie('MoodleSession'), getCookie('IDMSESSID')).then(x => {
-                if (name === name.toUpperCase()) {
-                    $('#course-panel').append(`<a class="courseBlock" style="text-decoration: none;" href="https://culearn.carleton.ca/moodle/course/view.php?id=` + code + `">
-      <div style="display: grid; gap: 4px; padding: 40px 0px; height: 125px; background-color: rgb(59, 59, 59); border-radius: 5px; grid-template-rows: 1fr 15px;" class="course_container" onmouseover="this.style.backgroundColor='#474747'" onmouseout="this.style.backgroundColor='#3b3b3b'">
-          <div style="margin: 0 auto; color: #FFFFFF; font-size: 20px; font-weight: 600;" class="course_name">` + name + `</div>
-          <div id="` + code + `" style="margin: 0 auto; color: #FFFFFF; font-size: 11px; height:15px;" class="course_name">` + x + `</div>
-      </div>
-      </a>`);
+                if (name) {
+                    console.log('maybe?');
+                    $('#course-panel').append(`
+                        <a class="courseBlock" style="text-decoration: none;" href="https://culearn.carleton.ca/moodle/course/view.php?id=` + code + `">
+                            <div style="display: grid; gap: 4px; padding: 40px 0px; height: 125px; background-color: rgb(59, 59, 59); border-radius: 5px; grid-template-rows: 1fr 15px;" class="course_container" onmouseover="this.style.backgroundColor='#474747'" onmouseout="this.style.backgroundColor='#3b3b3b'">
+                                <div style="margin: 0 auto; color: #FFFFFF; font-size: 20px; font-weight: 600;" class="course_name">` + name + `</div>
+                                <div id="` + code + `" style="margin: 0 auto; color: #FFFFFF; font-size: 11px; height:15px;" class="course_name">` + x + `</div>
+                            </div>
+                        </a>
+                    `);
                     courseCount++;
                     if (courseCount === $('.courses').first().children().length - 1) {
                         $(".courseBlock").sort(Ascending_sort).appendTo('#course-panel');

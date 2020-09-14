@@ -1,3 +1,4 @@
+<!-- Created by Ahmed A. Moussa, GNU GPLv3 License -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <div style="text-align: center;" id="list-source-loading">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="52" height="52" fill="#088482">
@@ -37,9 +38,9 @@ function getCookie(cname) {
 }
 
 async function getNearestDate(code, moodleSession, idmSession) {
-    let nearestQuiz; let nearestAssignement;
-    await requestHandlerNearest(code, moodleSession, idmSession, 'quiz').then(date => nearestQuiz = date);
-    await requestHandlerNearest(code, moodleSession, idmSession, 'assign').then(date => nearestAssignement = date);
+    let [nearestQuiz, nearestAssignement] = await Promise.all([requestHandlerNearest(code, moodleSession, idmSession, 'quiz'), requestHandlerNearest(code, moodleSession, idmSession, 'assign')])
+    //await requestHandlerNearest(code, moodleSession, idmSession, 'quiz').then(date => nearestQuiz = date);
+    //await requestHandlerNearest(code, moodleSession, idmSession, 'assign').then(date => nearestAssignement = date);
     if (nearestQuiz === 'No Due Dates Approaching')
         return nearestAssignement;
     else if (nearestAssignement === 'No Due Dates Approaching')
@@ -51,9 +52,8 @@ async function getNearestDate(code, moodleSession, idmSession) {
             return nearestQuiz;
 }
 
-async function requestHandlerNearest(code, moodleSession, idmSession, mod) {
-    let externalListener;
-    await fetch('https://culearn.carleton.ca/moodle/mod/' + mod + '/index.php?id=' + code, {
+const requestHandlerNearest = (code, moodleSession, idmSession, mod) => new Promise((resolve) => {
+    fetch('https://culearn.carleton.ca/moodle/mod/' + mod + '/index.php?id=' + code, {
         method: 'POST',
         headers: {
             'Connection': 'keep-alive',
@@ -74,12 +74,11 @@ async function requestHandlerNearest(code, moodleSession, idmSession, mod) {
     }).then(pageData => {
         const PARSED_DATE = window['parseNearestIncomplete_' + mod](pageData);
         if (PARSED_DATE)
-            externalListener = PARSED_DATE[1];
+            resolve(PARSED_DATE[1]);
         else
-            externalListener = 'No Due Dates Approaching';
+            resolve('No Due Dates Approaching');
     });
-    return externalListener;
-}
+})
 
 function parseNearestIncomplete_quiz(data) { return data.match(/c2" style="text-align:left;">(.*?)<\/td>\n<td class="cell c3 lastcol" style="text-align:left;"><\/td>/); }
 
@@ -89,6 +88,7 @@ function Ascending_sort(a, b) {
     return ($(b).text().toUpperCase()) <  
         ($(a).text().toUpperCase()) ? 1 : -1;  
 }
+
 
 $(document).ready(function() {
     let courseCount = 0;
