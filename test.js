@@ -1,109 +1,118 @@
-const months = [
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<div style="text-align: center;" id="list-source-loading">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="52" height="52" fill="#088482">
+    <path transform="translate(0 0)" d="M0 12 V20 H4 V12z">
+      <animateTransform attributeName="transform" type="translate" values="0 0; 28 0; 0 0; 0 0" dur="1.5s" begin="0" repeatCount="indefinite" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline"></animateTransform>
+    </path>
+    <path opacity="0.5" transform="translate(0 0)" d="M0 12 V20 H4 V12z">
+      <animateTransform attributeName="transform" type="translate" values="0 0; 28 0; 0 0; 0 0" dur="1.5s" begin="0.1s" repeatCount="indefinite" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline"></animateTransform>
+    </path>
+    <path opacity="0.25" transform="translate(0 0)" d="M0 12 V20 H4 V12z">
+      <animateTransform attributeName="transform" type="translate" values="0 0; 28 0; 0 0; 0 0" dur="1.5s" begin="0.2s" repeatCount="indefinite" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline"></animateTransform>
+    </path>
+  </svg>
+</div>
+<div style="display: none; grid-template-columns: 1fr 1fr 1fr; grid-gap: 10px;" id="course-panel">
+
+</div>
+
+const MONTHS = [
     'January', 'February', 'March', 'April', 'May',
-    'June', 'July', 'August', "September",
+    'June', 'July', 'August', 'September',
     'October', 'November', 'December'
 ];
 
 function getCookie(cname) {
-    var name = cname + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
+    let name = cname + '=';
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
     for(var i = 0; i <ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') {
-        c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
-        }
+        let c = ca[i];
+        while (c.charAt(0) == ' ')
+            c = c.substring(1);
+        if (c.indexOf(name) == 0)
+            return c.substring(name.length, c.length);
     }
     return "";
 }
 
 async function getNearestDate(code, moodleSession, idmSession) {
-    let nearestQuiz;
-    let nearestAssignement;
-    await getNextQuiz(code, moodleSession, idmSession).then(date => nearestQuiz = date);
-    await getNextAssignement(code, moodleSession, idmSession).then(date => nearestAssignement = date);
-    if (nearestQuiz != 'No Upcoming Due Date' && nearestAssignement == 'No Upcoming Due Date')
-        return nearestQuiz;
-    else if (nearestQuiz == 'No Upcoming Due Date' && nearestAssignement != 'No Upcoming Due Date')
+    let nearestQuiz; let nearestAssignement;
+    await requestHandlerNearest(code, moodleSession, idmSession, 'quiz').then(date => nearestQuiz = date);
+    await requestHandlerNearest(code, moodleSession, idmSession, 'assign').then(date => nearestAssignement = date);
+    if (nearestQuiz === 'No Due Dates Approaching')
         return nearestAssignement;
-    else if (nearestQuiz == 'No Upcoming Due Date' && nearestAssignement == 'No Upcoming Due Date')
+    else if (nearestAssignement === 'No Due Dates Approaching')
         return nearestQuiz;
-    else {
-        let tempTimeStorage = "";
-        let parsed_nearestQuiz = nearestQuiz.split(', ').map(dateBlock => dateBlock.split(' ').map(dateElement => dateElement.includes(':') ? tempTimeStorage = dateElement.split(':').map(str => Number(str)) : (dateElement === 'PM' && tempTimeStorage.length) ? [tempTimeStorage[0] + 12, tempTimeStorage[1]] : dateElement === 'AM' ? tempTimeStorage : dateElement ));
-        let parsed_nearestAssignement = nearestAssignement.split(', ').map(dateBlock => dateBlock.split(' ').map(dateElement => dateElement.includes(':') ? tempTimeStorage = dateElement.split(':').map(str => Number(str)) : (dateElement === 'PM' && tempTimeStorage.length) ? [tempTimeStorage[0] + 12, tempTimeStorage[1]] : dateElement === 'AM' ? tempTimeStorage : dateElement ));
-        let timestampQuiz = new Date(Number(parsed_nearestQuiz[1][2]), parsed_nearestQuiz[1][1].indexOf(months), Number(parsed_nearestQuiz[1][0]), parsed_nearestQuiz[2][1][0], parsed_nearestQuiz[2][1][1]);
-        let timestampAssignement = new Date(Number(parsed_nearestAssignement[1][2]), parsed_nearestAssignement[1][1].indexOf(months), Number(parsed_nearestAssignement[1][0]), parsed_nearestAssignement[2][1][0], parsed_nearestAssignement[2][1][1])
-        if (timestampQuiz > timestampAssignement) {
-            return nearestQuiz;
-        }
-        else {
+    else
+        if (new Date(nearestQuiz).getTime() > new Date(nearestAssignement).getTime())
             return nearestAssignement;
+        else
+            return nearestQuiz;
+}
+
+async function requestHandlerNearest(code, moodleSession, idmSession, mod) {
+    let externalListener;
+    await fetch('https://culearn.carleton.ca/moodle/mod/' + mod + '/index.php?id=' + code, {
+        method: 'POST',
+        headers: {
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'DNT': '1',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-User': '?1',
+            'Sec-Fetch-Dest': 'document',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Cookie': 'MoodleSession=' + moodleSession + '; IDMSESSID=' + idmSession + ';'
         }
+    }).then(response => {
+        return response.text();
+    }).then(pageData => {
+        const PARSED_DATE = window['parseNearestIncomplete_' + mod](pageData);
+        if (PARSED_DATE)
+            externalListener = PARSED_DATE[1];
+        else
+            externalListener = 'No Due Dates Approaching';
+    });
+    return externalListener;
+}
+
+function parseNearestIncomplete_quiz(data) { return data.match(/c2" style="text-align:left;">(.*?)<\/td>\n<td class="cell c3 lastcol" style="text-align:left;"><\/td>/); }
+
+function parseNearestIncomplete_assign(data) { return data.match(/c2" style="text-align:center;">(.*?)<\/td>\n<td class="cell c3" style="text-align:right;">No submission<\/td>/); }
+
+function Ascending_sort(a, b) { 
+    return ($(b).text().toUpperCase()) <  
+        ($(a).text().toUpperCase()) ? 1 : -1;  
+}
+
+$(document).ready(function() {
+    let courseCount = 0;
+    for (div of $('.courses').first().children().toArray()) {
+        console.log('looping')
+        let code = $(div).children().first().attr('href').match(/id=(.*)/)[1];
+        let name = $(div).children().first().text().substring(0, 8) === 'Crosslis' ? $(div).children().first().text().substring(10, 18) : $(div).children().first().text().substring(0, 8);
+        getNearestDate(code, getCookie('MoodleSession'), getCookie('IDMSESSID')).then(x => {
+            if (name === name.toUpperCase()) {
+                $('#course-panel').append(`
+                    <a class="courseBlock" style="text-decoration: none;" href="https://culearn.carleton.ca/moodle/course/view.php?id=` + code + `">
+                        <div style="display: grid; gap: 4px; padding: 40px 0px; height: 125px; background-color: rgb(59, 59, 59); border-radius: 5px; grid-template-rows: 1fr 15px;" class="course_container" onmouseover="this.style.backgroundColor='#474747'" onmouseout="this.style.backgroundColor='#3b3b3b'">
+                            <div style="margin: 0 auto; color: #FFFFFF; font-size: 20px; font-weight: 600;" class="course_name">` + name + `</div>
+                            <div id="` + code + `" style="margin: 0 auto; color: #FFFFFF; font-size: 11px; height:15px;" class="course_name">` + x + `</div>
+                        </div>
+                    </a>
+                `);
+                courseCount++;
+                if (courseCount === $('.courses').first().children().length - 1) {
+                    $(".courseBlock").sort(Ascending_sort).appendTo('#course-panel');
+                    $('#course-panel').css("display", "grid");
+                    $('#list-source-loading').hide();
+                }
+            }
+        });
     }
-}
-
-async function getNextQuiz(code, moodleSession, idmSession) {
-    let url = 'https://culearn.carleton.ca/moodle/mod/quiz/index.php?id=' + code;
-    let nearestQuiz = "";
-    await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'DNT': '1',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'Sec-Fetch-Site': 'same-origin',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-User': '?1',
-            'Sec-Fetch-Dest': 'document',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Cookie': 'MoodleSession=' + moodleSession + '; IDMSESSID=' + idmSession + ';'
-        }
-    }).then(pageData => {
-        return pageData.text();
-    }).then(data => {
-        let parsedDate = data.match(/c2" style="text-align:left;">(.*?)<\/td>\n<td class="cell c3 lastcol" style="text-align:left;"><\/td>/);
-        if (parsedDate)
-            nearestQuiz = parsedDate[1];
-        else
-            nearestQuiz = 'No Upcoming Due Date';
-    });
-    return nearestQuiz;
-}
-
-async function getNextAssignement(code, moodleSession, idmSession) {
-    let url = 'https://culearn.carleton.ca/moodle/mod/assign/index.php?id=' + code;
-    let nearestAssignement = "";
-    await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'DNT': '1',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'Sec-Fetch-Site': 'same-origin',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-User': '?1',
-            'Sec-Fetch-Dest': 'document',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Cookie': 'MoodleSession=' + moodleSession + '; IDMSESSID=' + idmSession + ';'
-        }
-    }).then(pageData => {
-        return pageData.text();
-    }).then(data => {
-        let parsedDate = data.match(/c2" style="text-align:center;">(.*?)<\/td>\n<td class="cell c3" style="text-align:right;">No submission<\/td>/);
-        if (parsedDate !== null)
-            nearestAssignement = parsedDate[1];
-        else
-            nearestAssignement = 'No Upcoming Due Date';
-    });
-    return nearestAssignement;
-}
+});
