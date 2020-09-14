@@ -40,11 +40,28 @@ html, body {
     scrollbar-track-color: var(--color-transparent);   */
 }
 
+body {
+    display: grid;
+    grid-template-rows: 1fr;
+}
 
 ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
+}
+
+#custom-bg {
+    display: none; 
+    background-color: #242424; 
+    height: 100vh;
+}
+
+#custom-page {
+    display: grid;
+    grid-template-rows: 62px 1fr;
+    opacity: 0; 
+    height: 100%;
 }
 
 /* HEADER */
