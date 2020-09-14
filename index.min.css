@@ -13,12 +13,9 @@ html {
 }
 
 html, body {
-    background: #242424;
     color: #FFFFFF;
 
     font-family: San Francisco, Segoe UI, Helvetica Neue, sans-serif;
-    font-size: var(--font-size-16);
-    font-weight: var(--font-weight-regular);
     
     -webkit-font-smoothing: antialiased; /* Crisper fonts */
     -moz-osx-font-smoothing: grayscale;
