@@ -50,8 +50,10 @@ ul {
     padding: 0;
 }
 
-a {
+a, a:hover {
     text-decoration: none;
+    color: #FFFFFF;
+    font-weight: 400;
 }
 
 ::-webkit-scrollbar {
@@ -127,16 +129,18 @@ main > section.rgt {
 
 section .section-wrapper {
     display: grid;
-    grid-gap: 12px;
+    overflow: hidden;
     padding: 20px;
 }
 
 section .section-inner {
+    overflow: hidden;
     border-radius: 4px;
 }
 
 section .section-wrapper.courses-panel {
     grid-template-rows: 28px 35px 1fr;
+    grid-gap: 22px;
 }
 
 section .section-wrapper.pinned,
@@ -158,12 +162,6 @@ section .section-header {
     fill: #FFFFFF;
 }
 
-a.courseBlock {
-    text-decoration: none;
-    color: #FFFFFF;
-    font-weight: 400;
-}
-
 .search {
     position: relative;
     height: 100%;
@@ -182,6 +180,7 @@ a.courseBlock {
 }
 
 .search-input {
+    box-sizing: border-box !important;
     background: #585858;
     border: 0;
     border-radius: 4px;
@@ -214,6 +213,10 @@ a.courseBlock {
     margin: auto 0;
 }
 
+.list-element a {
+    display: grid;
+}
+
 .list-element.group {
     background-color: #9e0018;
     font-size: 20px;
@@ -229,9 +232,23 @@ a.courseBlock {
 
 .list-element.course {
     cursor: pointer;
-    grid-template-columns: 40% 1fr;
+    grid-template-columns: 1fr 101px;
 }
 
 .list-element.course:hover {
     background-color: #464646;
+}
+
+.course_actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.course_action {
+    width: 100px;
+    text-align: center;
+}
+
+.course:hover .course_action {
+    border-left: 1px solid #fff;
 }
