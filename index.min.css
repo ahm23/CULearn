@@ -61,7 +61,7 @@ a, a:hover {
     height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-    background: #2b2b2b;
+    background: #232323;
 }
 
 #custom-bg {
@@ -197,6 +197,7 @@ section .section-header {
 }
 
 .list { 
+    overflow: auto;
     height: 100%;
     width: 100%;
     border-radius: inherit;
