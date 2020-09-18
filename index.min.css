@@ -64,6 +64,10 @@ a, a:hover {
     background: #232323;
 }
 
+::-webkit-scrollbar-track {
+    background: #4a4a4a;
+}
+
 #custom-bg {
     display: none; 
     background-color: #242424; 
