@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="installerCSSModel.css">
+    <title>Installer Model</title>
+    <script>
+        $(document).ready(async function () {
+            $('#intro-center').fadeTo(1200, 1);
+            await new Promise(resolve => setTimeout(resolve, 2400));
+            $('#intro-center').fadeTo(1200, 0);
+            await new Promise(resolve => setTimeout(resolve, 1800));
+            $('#intro-center').text('Welcome to cuLearn++').fadeTo(1200, 1);
+            await new Promise(resolve => setTimeout(resolve, 2500));
+            $('#intro-center').fadeTo(1200, 0);
+            await new Promise(resolve => setTimeout(resolve, 1800));
+            $('#intro-center').text("Before we Begin, Let's set a few things up!").fadeTo(1200, 1);
+            await new Promise(resolve => setTimeout(resolve, 4000));
+            $('#intro-center').fadeTo(1200, 0, function () {
+                $(this).hide();
+            });
+            await new Promise(resolve => setTimeout(resolve, 1200));
+
+        });
+    </script>
+</head>
+<body>
+    <div id="intro-center" class="page_center_text text_xlarge intro">
+        Hi There!
+    </div>
+    <main class="setup">
+        <header>
+            <div class="cancel">Cancel Installation 🡒 </div>
+            <svg class="cancel" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm4 10.88L10.88 12 8 9.12 5.12 12 4 10.88 6.88 8 4 5.12 5.12 4 8 6.88 10.88 4 12 5.12 9.12 8 12 10.88z" fill-rule="nonzero"></path></svg>
+        </header>
+    </main>
+</body>
+</html>
