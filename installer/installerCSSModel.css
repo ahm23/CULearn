@@ -122,17 +122,20 @@ main > section.schedule {
     border: 1px solid rgb(175, 175, 175);
 }
 
-.field > button {
+button {
     height: 35px;
     border-radius: 12px;
     padding: 0 20px;
     outline: none;
     border: none;
-    background-color: rgb(245, 232, 158);
+    background-color: #ffffff;
     cursor: pointer;
     font-family: 'Nunito';
     margin-left: 1.5%;
-    border: 1px solid rgb(175, 175, 175);
+    border: 2px solid rgb(228, 228, 228);
+    font-size: 18px;
+    margin-left: 5%;
+    width: 150px;
 }
 
 header.cancel {

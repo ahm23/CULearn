@@ -30,40 +30,28 @@
         });
     </script>
     <script>
-        function parseCourses(group) {
-            let courses = {};
-            for (course of $(group).children().toArray()) {
-                const TITLE = $(course).text();
-                let code = $(course).children('a').attr('href').match(/id=(.*)/)[1];
-                let name = TITLE.match(/[A-Z]{4}\d{4}/) ? TITLE.match(/[A-Z]{4}\d{4}/)[0] : undefined;
-                if (!name)
-                    break;
-                if (TITLE.indexOf('LAB') === -1) {
-                    let section = TITLE.indexOf('Crosslist') > -1 ? 'Crosslist' : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g);
-                    let lab = courses[name] ? courses.name.code : undefined;
-                    courses[name] = {
-                        code,
-                        section: section ? section : '',
-                        lab
-                    };
-                } else {
-                    if (courses[name]) courses[name].lab = code;
-                    else {
-                        courses[name] = {
-                            code,
-                            section: 'LAB'
-                        };
-                    }
-                }
-            }
-            console.log(courses);
-            return courses;
+        function submitSchedule() {
+            $('main').fadeTo(1200, 0, function() {
+                $('#intro-center').html(`
+                <div style="margin: auto; text-align: center;" id="page-load">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="52" height="52" fill="#242424">
+                <path transform="translate(0 0)" d="M0 12 V20 H4 V12z">
+                <animateTransform attributeName="transform" type="translate" values="0 0; 28 0; 0 0; 0 0" dur="1.5s" begin="0" repeatCount="indefinite" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline"></animateTransform>
+                </path>
+                <path opacity="0.5" transform="translate(0 0)" d="M0 12 V20 H4 V12z">
+                <animateTransform attributeName="transform" type="translate" values="0 0; 28 0; 0 0; 0 0" dur="1.5s" begin="0.1s" repeatCount="indefinite" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline"></animateTransform>
+                </path>
+                <path opacity="0.25" transform="translate(0 0)" d="M0 12 V20 H4 V12z">
+                <animateTransform attributeName="transform" type="translate" values="0 0; 28 0; 0 0; 0 0" dur="1.5s" begin="0.2s" repeatCount="indefinite" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline"></animateTransform>
+                </path>
+                </svg>
+                </div>
+                `).fadeTo(1000, 1);
+            });
         }
-        let courseCount = 0;
-        $(document).ready(function(){
-            for ([key, value] of Object.entries(parseCourses($('.courses').toArray()[0]))) {
-                courseCount++;
-                $('.schedule').append(`
+
+        function appendCourse(courseCount, name, code, section, isTutorial) {
+            $('.schedule').append(`
                 <div class="class">
                 <header>
                     Course #` + courseCount + `
@@ -71,7 +59,7 @@
                 <div class="row">
                     <div class="field quarter">
                         <div class="header ">Course Code*</div>
-                        <input type="text" id="code` + courseCount + `" data-course="` + courseCount + `" class="input course_code" val="` + key + `"/>
+                        <input type="text" id="code` + courseCount + `" data-course="` + courseCount + `" class="input course_code" value="` + name + `"/>
                     </div>
                     <div class="field">
                         <div class="header">Class Times*</div>
@@ -106,18 +94,71 @@
                     </div>
                     <div class="field quarter">
                         <div class="header">Display Name</div>
-                        <input id="name` + courseCount + `" data-course="` + courseCount + `" class="input course_name" val="` + key.replace(/^(.{4})(.*)$/, "$1 $2") + ` ` + value.section + `" />
+                        <input id="name` + courseCount + `" data-course="` + courseCount + `" class="input course_name" value="` + name.replace(/^(.{4})(.*)$/, "$1 $2") + ` ` + section + `" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="field half">
                         <div class="header">Course URL*</div>
-                        <input class="input" val="https://culearn.carleton.ca/moodle/course/view.php?id=` + value.code + `" />
+                        <input class="input" value="https://culearn.carleton.ca/moodle/course/view.php?id=` + code + `" />
+                    </div>
+                    <div class="field quarter">
+                        <div class="header">Tutorial*</div>
+                        <div class="checklist item_checkbox">
+                            <label class="checkbox_style">
+                                <input class="checkbox" type="checkbox" ` + isTutorial ? 'checked' : '' + `/>
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
                 `);
-            } 
+            
+        }
+
+        function parseCourses(group) {
+            let courses = {};
+            for (course of $(group).children().toArray()) {
+                const TITLE = $(course).text();
+                let code = $(course).children('a').attr('href').match(/id=(.*)/)[1];
+                let name = TITLE.match(/[A-Z]{4}\d{4}/) ? TITLE.match(/[A-Z]{4}\d{4}/)[0] : undefined;
+                if (!name)
+                    continue;
+                if (TITLE.indexOf('LAB') === -1) {
+                    let section = TITLE.indexOf('Crosslist') > -1 ? 'Crosslist' : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g);
+                    let lab = courses[name] ? courses.name.code : undefined;
+                    courses[name] = {
+                        code,
+                        section: section ? section : '',
+                        lab
+                    };
+                } else {
+                    if (courses[name]) courses[name].lab = code;
+                    else {
+                        courses[name] = {
+                            code,
+                            section: 'Tutorial'
+                        };
+                    }
+                }
+            }
+            console.log(courses);
+            return courses;
+        }
+
+
+
+        let courseCount = 0;
+        $(document).ready(function(){
+            for ([key, value] of Object.entries(parseCourses($('.courses').toArray()[0]))) {
+                courseCount++;
+                console.log(value)
+                appendCourse(courseCount, key, value.code, value.section, (value.section == 'Tutorial' ? true : false));
+                if (value.lab) {
+                    appendCourse(courseCount, key, value.lab, 'Tutorial', true); 
+                }
+            }
         });
         $(document).ready(function(){
             $('body').on('keyup', '.course_code', function () {
@@ -192,6 +233,7 @@
             $('body').attr('style', '');
             $('#page-wrapper, #page-header').show();
         });
+        
     </script>
 </head>
 <body>
@@ -211,6 +253,9 @@
         </section>
         <div class="footer">
             <div class="add_class">+ Add Another Class</div>
+        </div>
+        <div class="submit_schedule">
+            <button>Next -></button>
         </div>
     </main>
 </body>
