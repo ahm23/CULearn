@@ -3,7 +3,7 @@ $('body').attr('style', 'display: grid; margin: 0 !important;');
     var link = document.createElement('link');
     link.id = 'imported-css'
     link.rel = 'stylesheet';
-    link.href = 'https://cdn.jsdelivr.net/gh/ahm23/CULearn@3.0.0b/installer/installerCSSModel.css';
+    link.href = 'https://cdn.jsdelivr.net/gh/ahm23/CULearn@3.0.1b/installer/installerCSSModel.css';
     document.getElementsByTagName('HEAD')[0].appendChild(link);
     var link2 = document.createElement('link');
     link2.rel = 'stylesheet';
