@@ -77,7 +77,7 @@ const requestHandler = (url) => new Promise((resolve) => {
     });
 });
 
-function submitClasses() {
+async function submitClasses() {
     var classData = [];
     for (course of $('.class').toArray()) {
         const CLASS_ID = $(course).data('class');
