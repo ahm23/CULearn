@@ -177,7 +177,8 @@ function parseCourses(group) {
         if (!name)
             continue;
         if (TITLE.indexOf('LAB') === -1) {
-            let section = TITLE.indexOf('Crosslist') > -1 ? 'Crosslist' : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g);
+            // Need section error handling
+            let section = TITLE.indexOf('Crosslist') > -1 ? 'Crosslist' : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g)[0] === "L" ? TITLE.match(/(?<=^[A-Z]{4}\d{4})(.*)(?=\D)/g)[0] : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g)[0];
             let lab = courses[name] ? courses.name.code : undefined;
             courses[name] = {
                 code,
@@ -198,9 +199,32 @@ function parseCourses(group) {
     return courses;
 }
 
+function parseCourses(group) {
+    let courses = {};
+    for (course of $(group).children().toArray()) {
+        const TITLE = $(course).text();
+        let code = $(course).children('a').attr('href').match(/id=(.*)/)[1];
+        let name = TITLE.match(/[A-Z]{4}\d{4}/) ? TITLE.match(/[A-Z]{4}\d{4}/)[0] : undefined;
+        if (!name)
+            continue; // Need better error handling  than this
+        // Need section error handling
+        let section = TITLE.indexOf('Crosslist') > -1 ? 'Crosslist' : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g)[0] === "L" ? TITLE.match(/(?<=^[A-Z]{4}\d{4})(.*)\d(?=\w)/g)[0] : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g)[0];
+        courses[name] = {
+            code,
+            section: section ? section : '',
+        };
+    }
+    console.log(courses);
+    return courses;
+}
+
 $(document).ready(function() {
     let courseCount = 0;
     for ([key, value] of Object.entries(parseCourses($('.courses').toArray()[0]))) {
+        // Insert time fetch here
+        var times = getTime([key, value]);
+
+
         courseCount++;
         console.log(value)
         appendCourse(courseCount, key, value.code, value.section, (value.section == 'Tutorial' ? true : false));
@@ -233,3 +257,19 @@ $(document).on('click', '#submit_schedule', function() {
     console.log('submittin')
     submitClasses();
 });
+
+
+function getTime([course, data]) {
+
+
+    response = XHRHandler()
+}
+
+const XHRHandler = function (url) { 
+    new Promise((resolve, reject) => {
+        await $.get(url, {'Cookie': document.cookie.split('; ').find(row => row.startsWith('MoodleSession')).split('=')[1]}, function (data, status) {
+            rawDat = data;
+        });
+    })
+}
+

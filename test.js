@@ -37,6 +37,8 @@ function getCookie(cname) {
     return "";
 }
 
+////////// Just getting set up :0 computer is turbolagging I broke something one sec
+
 async function getNearestDate(code, moodleSession, idmSession) {
     let [nearestQuiz, nearestAssignement] = await Promise.all([requestHandlerNearest(code, moodleSession, idmSession, 'quiz'), requestHandlerNearest(code, moodleSession, idmSession, 'assign')])
     //await requestHandlerNearest(code, moodleSession, idmSession, 'quiz').then(date => nearestQuiz = date);
