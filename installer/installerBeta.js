@@ -208,11 +208,12 @@ function parseCourses(group) {
         if (!name)
             continue; // Need better error handling  than this
         // Need section error handling
-        let section = TITLE.indexOf('Crosslist') > -1 ? 'Crosslist' : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g)[0] === "L" ? TITLE.match(/(?<=^[A-Z]{4}\d{4})(.*)\d(?=\w)/g)[0] : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g)[0];
-        courses[name] = {
-            code,
-            section: section ? section : '',
-        };
+        let section = TITLE.indexOf('Crosslist') > -1 ? 'Crosslist' : TITLE.match(/(?<=^[A-Z]{4}\d{4})\w(?:(?!\D).)*/)[0];
+        let crn = section !== 'Crosslist' ? TITLE.match(/(?<=\[).+?(?=\])/) : null;      
+
+        courses[name] && courses[name].length ? courses[name].push({crn, section, code}) : courses[name] = [{crn, section, code}];
+        if (section.length === 1)
+            data.unshift(data.splice(courses[name].length - 1, 1)[0]);
     }
     console.log(courses);
     return courses;
@@ -220,17 +221,20 @@ function parseCourses(group) {
 
 $(document).ready(function() {
     let courseCount = 0;
+    let verified = [];
     for ([key, value] of Object.entries(parseCourses($('.courses').toArray()[0]))) {
         // Insert time fetch here
-        var times = getTime([key, value]);
-
-
+        if (key)
+        
+        
+        
+        /*var times = getTime([key, value]);
         courseCount++;
         console.log(value)
         appendCourse(courseCount, key, value.code, value.section, (value.section == 'Tutorial' ? true : false));
         if (value.lab) {
             appendCourse(courseCount, key, value.lab, 'Tutorial', true);
-        }
+        }*/
     }
     $('body').on('keyup', '.course_code', function() {
         const INPUT = $(this).val().trim().toUpperCase();
