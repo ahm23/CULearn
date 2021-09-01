@@ -100,120 +100,18 @@ async function submitClasses() {
     console.log(matchedBlockID[matchedBlockID.length]);
 }
 
-
-
-function appendCourse(courseCount, name, code, section, isTutorial) {
-    $('.schedule').append(`
-            <div data-class="`+ courseCount + `" class="class">
-            <header>
-                Course #` + courseCount + `
-            </header>
-            <div class="row">
-                <div class="field quarter">
-                    <div class="header ">Course Code*</div>
-                    <input type="text" id="code` + courseCount + `" data-course="` + courseCount + `" class="input course_code" value="` + name + `"/>
-                </div>
-                <div class="field">
-                    <div class="header">Class Times*</div>
-                    <div class="class_time">
-                        <label>Day 1:</label>
-                        <select id="first` + courseCount + `" name="days">
-                            <option value="na">N/A</option>
-                            <option value="sunday">Sunday</option>
-                            <option value="monday">Monday</option>
-                            <option value="tuesday">Tuesday</option>
-                            <option value="wednesday">Wednesday</option>
-                            <option value="thursday">Thursday</option>
-                            <option value="friday">Friday</option>
-                            <option value="saturday">Saturday</option>
-                        </select>
-                        <label>Start Time:</label>
-                        <input type="time" />
-                        <label>Day 2:</label>
-                        <select id="second` + courseCount + `" name="days">
-                            <option value="na">N/A</option>
-                            <option value="sunday">Sunday</option>
-                            <option value="monday">Monday</option>
-                            <option value="tuesday">Tuesday</option>
-                            <option value="wednesday">Wednesday</option>
-                            <option value="thursday">Thursday</option>
-                            <option value="friday">Friday</option>
-                            <option value="saturday">Saturday</option>
-                        </select>
-                        <label>End Time:</label>
-                        <input type="time" />
-                    </div>
-                </div>
-                <div class="field quarter">
-                    <div class="header">Display Name</div>
-                    <input id="name` + courseCount + `" class="input course_name" value="` + name.replace(/^(.{4})(.*)$/, "$1 $2") + ` ` + section + `" />
-                </div>
-            </div>
-            <div class="row">
-                <div class="field half">
-                    <div class="header">Course URL*</div>
-                    <input id="url` + courseCount + `" class="input" value="https://culearn.carleton.ca/moodle/course/view.php?id=` + code + `" />
-                </div>
-                <div class="field quarter">
-                    <div class="header">Tutorial*</div>
-                    <div class="checklist item_checkbox">
-                        <label class="checkbox_style">
-                            <input class="checkbox" type="checkbox" ` + (isTutorial ? 'checked' : '') + `/>
-                            <span class="checkmark"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `);
-}
-
 function parseCourses(group) {
     let courses = {};
     for (course of $(group).children().toArray()) {
         const TITLE = $(course).text();
-        let code = $(course).children('a').attr('href').match(/id=(.*)/)[1];
-        let name = TITLE.match(/[A-Z]{4}\d{4}/) ? TITLE.match(/[A-Z]{4}\d{4}/)[0] : undefined;
-        if (!name)
-            continue;
-        if (TITLE.indexOf('LAB') === -1) {
-            // Need section error handling
-            let section = TITLE.indexOf('Crosslist') > -1 ? 'Crosslist' : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g)[0] === "L" ? TITLE.match(/(?<=^[A-Z]{4}\d{4})(.*)(?=\D)/g)[0] : TITLE.match(/(?<=^[A-Z]{4}\d{4})(.)/g)[0];
-            let lab = courses[name] ? courses.name.code : undefined;
-            courses[name] = {
-                code,
-                section: section ? section : '',
-                lab
-            };
-        } else {
-            if (courses[name]) courses[name].lab = code;
-            else {
-                courses[name] = {
-                    code,
-                    section: 'Tutorial'
-                };
-            }
-        }
-    }
-    console.log(courses);
-    return courses;
-}
-
-function parseCourses(group) {
-    let courses = {};
-    for (course of $(group).children().toArray()) {
-        const TITLE = $(course).text();
-        let code = $(course).children('a').attr('href').match(/id=(.*)/)[1];
-        let name = TITLE.match(/[A-Z]{4}\d{4}/) ? TITLE.match(/[A-Z]{4}\d{4}/)[0] : undefined;
-        if (!name)
-            continue; // Need better error handling  than this
-        // Need section error handling
-        let section = TITLE.indexOf('Crosslist') > -1 ? 'Crosslist' : TITLE.match(/(?<=^[A-Z]{4}\d{4})\w(?:(?!\D).)*/)[0];
-        let crn = section !== 'Crosslist' ? TITLE.match(/(?<=\[).+?(?=\])/) : null;      
-
-        courses[name] && courses[name].length ? courses[name].push({crn, section, code}) : courses[name] = [{crn, section, code}];
-        if (section.length === 1)
-            data.unshift(data.splice(courses[name].length - 1, 1)[0]);
+        let code = $(course).children('a').attr('href').match(/id=(.*)/)[1] + "";
+        let crn = (TITLE.match(/(?<=\[).+?(?=\])/g) + "").split(':');   
+        console.log(crn);
+        let name = crn ? (TITLE.match(/[A-Z]{4}\d{4}/g) + "").split(':'): null;     
+        console.log(name);
+        let section = crn  ? TITLE.match(/(?<=^[A-Z]{4}\d{4})\w(?:(?!\D).)*/g) + "" : null;
+        console.log(section);
+        courses[code] = {crn, code, name, section};
     }
     console.log(courses);
     return courses;
@@ -222,10 +120,11 @@ function parseCourses(group) {
 $(document).ready(function() {
     let courseCount = 0;
     let verified = [];
+    XHRHandler('https://www.whateverorigin.org/get?url=http://158.69.1.52/search/classes202110/_doc/20211013696');
+    
     for ([key, value] of Object.entries(parseCourses($('.courses').toArray()[0]))) {
         // Insert time fetch here
-        if (key)
-        
+        console.log('epic');
         
         
         /*var times = getTime([key, value]);
@@ -236,18 +135,9 @@ $(document).ready(function() {
             appendCourse(courseCount, key, value.lab, 'Tutorial', true);
         }*/
     }
-    $('body').on('keyup', '.course_code', function() {
-        const INPUT = $(this).val().trim().toUpperCase();
-        if (INPUT.length > 7 && INPUT.match(/[A-Z]{4}\d{4}/))
-            $('#name' + $(this).data('course')).val(INPUT.replace(/^(.{4})(.*)$/, "$1 $2"));
-        else
-            $('#name' + $(this).data('course')).val(INPUT);
-    });
-    $('.add_class').click(function() {
-        courseCount++;
-        appendCourse(courseCount, '', '', '', false);
-    });
 });
+
+
 
 $(document).on('click', '#revert', function() {
     console.log('revertin')
@@ -265,15 +155,19 @@ $(document).on('click', '#submit_schedule', function() {
 
 function getTime([course, data]) {
 
-
     response = XHRHandler()
 }
 
-const XHRHandler = function (url) { 
-    new Promise((resolve, reject) => {
-        await $.get(url, {'Cookie': document.cookie.split('; ').find(row => row.startsWith('MoodleSession')).split('=')[1]}, function (data, status) {
-            rawDat = data;
+const XHRHandler = (url) => { 
+    new Promise(async (resolve, reject) => {
+        $.ajax({
+            url,
+            type: "GET",
+            headers: {'Authorization': 'ApiKey OWtXR0JIY0J1cXhjaGFRTEJuNmw6MGRQNjZUMDhSVnVhQ1Y0dm93alkxUQ=='},
+        }).done(function (data) {
+            console.log(data);
+            resolve(data);
         });
-    })
+    });
 }
 

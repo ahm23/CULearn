@@ -10,6 +10,10 @@ html, body {
     height: 100%;
 }
 
+.yes {
+    height: 100%;
+}
+
 ::-webkit-scrollbar {
     width:  8px;
     height: 8px;
@@ -41,12 +45,13 @@ header {
     cursor: pointer;
 }
 
-
+main {
+    display: none;
+}
 
 /* DASHBOARD */
 
 main.dash {
-    display: grid;
     grid-template-rows: 80px 1fr;
     padding: 0 50px 50px 50px;
 }
